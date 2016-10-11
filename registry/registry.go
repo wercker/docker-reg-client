@@ -2,6 +2,7 @@ package registry
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -53,9 +54,14 @@ func NewClient() *Client {
 		panic(err)
 	}
 
+	httpClient := http.DefaultClient
+	httpDefaultTransport := http.DefaultTransport
+	httpDefaultTransport.(*http.Transport).TLSNextProto = map[string](func(authority string, c *tls.Conn) http.RoundTripper){}
+	httpClient.Transport = httpDefaultTransport
+
 	c := &Client{
 		BaseURL: baseURL,
-		client:  http.DefaultClient,
+		client:  httpClient,
 	}
 
 	c.Hub = &HubService{client: c}
